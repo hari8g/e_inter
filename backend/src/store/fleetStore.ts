@@ -14,6 +14,7 @@ import {
   initialPolicy,
   initialVehicles,
 } from "../seed/bengaluruFleet.js";
+import { buildPortfolioValuation } from "../services/financePortfolio.js";
 import { enrichBatteryHealth, enrichDrivers, enrichLifecycle } from "../services/prognosis.js";
 import type { DriverClassification } from "../types/domain.js";
 
@@ -151,6 +152,10 @@ class FleetStore {
 
   drivers(): DriverClassification[] {
     return enrichDrivers(initialDriverSeeds);
+  }
+
+  portfolioValuation() {
+    return buildPortfolioValuation(this.vehicles, this.batteryHealth(), this.lifecycle(), new Date());
   }
 
   tickCanNoise() {

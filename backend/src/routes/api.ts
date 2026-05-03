@@ -123,13 +123,6 @@ apiRouter.get("/analytics/driver-classification", (_req, res) => {
   res.json({ updatedAt: new Date().toISOString(), items: fleetStore.drivers() });
 });
 
-apiRouter.get("/can/snapshot", (_req, res) => {
-  const items = fleetStore.vehicles
-    .filter((v) => v.telemetryMode === "can_gps" && v.can)
-    .map((v) => ({
-      vehicleId: v.id,
-      registration: v.registration,
-      snapshot: v.can!,
-    }));
-  res.json({ updatedAt: new Date().toISOString(), items });
+apiRouter.get("/analytics/portfolio-valuation", (_req, res) => {
+  res.json(fleetStore.portfolioValuation());
 });

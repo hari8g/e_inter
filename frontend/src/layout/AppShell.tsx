@@ -1,8 +1,8 @@
 import {
-  Activity,
   BarChart3,
   BatteryCharging,
   Bike,
+  IndianRupee,
   LayoutGrid,
   MapPin,
   Route,
@@ -24,7 +24,7 @@ const nav = [
   { to: "/battery-health", label: "Battery health", icon: BatteryCharging },
   { to: "/asset-lifecycle", label: "Asset lifecycle", icon: Route },
   { to: "/drivers", label: "Drivers", icon: Shield },
-  { to: "/can-bus", label: "CAN telemetry", icon: Activity },
+  { to: "/portfolio-value", label: "Portfolio value", icon: IndianRupee },
 ];
 
 function formatClock() {

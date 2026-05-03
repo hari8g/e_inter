@@ -1,4 +1,4 @@
-import { Activity, BarChart3, BatteryCharging, Route, Shield } from "lucide-react";
+import { BarChart3, BatteryCharging, IndianRupee, Route, Shield } from "lucide-react";
 import { useEffect, useId, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
@@ -7,7 +7,7 @@ import { chart, tooltipProps } from "@/lib/chartTheme";
 import { PageHeader } from "@/layout/AppShell";
 import { Card } from "@/ui/Card";
 
-type Summary = { can: number; degrading: number; bandC: number };
+type Summary = { fmvLakh: number; degrading: number; bandC: number };
 
 function Spark({ data, color }: { data: { v: number }[]; color: string }) {
   const gid = useId().replace(/:/g, "");
@@ -44,11 +44,11 @@ export default function Analytics() {
 
   useEffect(() => {
     let alive = true;
-    Promise.all([api.canSnapshot(), api.batteryHealth(), api.drivers(), api.assetLifecycle()])
-      .then(([can, bat, drv, life]) => {
+    Promise.all([api.portfolioValuation(), api.batteryHealth(), api.drivers(), api.assetLifecycle()])
+      .then(([pv, bat, drv, life]) => {
         if (!alive) return;
         setSummary({
-          can: can.items.length,
+          fmvLakh: Math.round(pv.enterprise.totalFairMarketValueInr / 100_000) / 10,
           degrading: bat.items.filter((b) => b.trend === "degrading").length,
           bandC: drv.items.filter((d) => d.band === "C").length,
         });
@@ -59,7 +59,7 @@ export default function Analytics() {
         const sc = drv.items[0]?.safetyHistory ?? [];
         setDriverSpark(sc.map((s) => ({ v: s.score })));
       })
-      .catch(() => alive && setSummary({ can: 0, degrading: 0, bandC: 0 }));
+      .catch(() => alive && setSummary({ fmvLakh: 0, degrading: 0, bandC: 0 }));
     return () => {
       alive = false;
     };
@@ -99,21 +99,21 @@ export default function Analytics() {
       sparkColor: chart.accent,
     },
     {
-      to: "/can-bus",
-      title: "CAN telemetry",
-      operatorLine: "What live BMS / inverter signals are feeding the models?",
-      desc: "Snapshot of motor temp, pack voltage, cell spread, and BMS quality for CAN-equipped vehicles. Confirms whether data quality supports the battery views.",
-      icon: Activity,
-      stat: summary ? `${summary.can} asset(s) with CAN + GPS stream` : "—",
+      to: "/portfolio-value",
+      title: "Portfolio value",
+      operatorLine: "What is the fleet worth on paper for NBFC or dry-lease review?",
+      desc: "Indicative list, fair market value, and 36-month-style residual in INR — enterprise totals plus per-asset notes for credit desks.",
+      icon: IndianRupee,
+      stat: summary ? `~₹${summary.fmvLakh}L model FMV (demo)` : "—",
       spark: [
-        { v: 3 },
-        { v: 5 },
-        { v: 4 },
-        { v: 7 },
-        { v: 6 },
-        { v: 8 },
-        { v: 7 },
-        { v: 9 },
+        { v: 62 },
+        { v: 64 },
+        { v: 63 },
+        { v: 66 },
+        { v: 65 },
+        { v: 68 },
+        { v: 67 },
+        { v: 70 },
       ],
       sparkColor: chart.brand,
     },
@@ -141,7 +141,7 @@ export default function Analytics() {
           <li>Start with <strong className="text-ink">Battery health</strong> if you are triaging pack risk or SOH complaints.</li>
           <li>Use <strong className="text-ink">Asset lifecycle</strong> for odometer-based service planning and end-of-life watch.</li>
           <li>Open <strong className="text-ink">Drivers</strong> for coaching queues (bands and weekly safety line).</li>
-          <li>Check <strong className="text-ink">CAN telemetry</strong> when you need to confirm live BMS feeds for CAN assets.</li>
+          <li>Open <strong className="text-ink">Portfolio value</strong> for NBFC / lessor FMV and residual snapshot.</li>
         </ul>
       </Card>
 

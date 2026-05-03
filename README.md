@@ -18,7 +18,7 @@ The repo is split into **`frontend/`** (React + Vite + Tailwind + Recharts + Lea
 | **Battery health** | SOH history/forecast, imbalance risk, **fade attribution** (calendar / cyclic / Δcell / thermal), heuristic indices, fleet charts. |
 | **Asset lifecycle** | Odometer-forward cards, **next major service date**, wear curve, RUL-style fields, heuristic flags. |
 | **Driver classification** | Radar + safety trajectory (demo drivers). |
-| **CAN telemetry** | Live-style BMS aggregates for CAN assets. |
+| **Portfolio value** | NBFC / dry-lease snapshot: indicative list, FMV, and residual in INR. |
 
 ## Requirements
 
@@ -119,7 +119,7 @@ Base path: **`/api/v1`**
 | `GET` | `/analytics/battery-health` | Battery points + history/forecast/heuristics. |
 | `GET` | `/analytics/asset-lifecycle` | Lifecycle stages + heuristics. |
 | `GET` | `/analytics/driver-classification` | Driver scores. |
-| `GET` | `/can/snapshot` | CAN snapshots for CAN-enabled vehicles. |
+| `GET` | `/analytics/portfolio-valuation` | FMV, residual, and enterprise roll-up for NBFC / lessor views. |
 
 ## Project layout
 

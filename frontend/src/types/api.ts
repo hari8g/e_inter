@@ -169,6 +169,41 @@ export interface AssetLifecycleStage {
   };
 }
 
+export type PortfolioValueBand = "strong" | "normal" | "soft" | "stressed";
+
+export interface PortfolioValuationItem {
+  vehicleId: string;
+  registration: string;
+  displayName: string;
+  model: string;
+  telemetryMode: TelemetryMode;
+  odometerKm: number;
+  sohPercent: number;
+  indicativeListPriceInr: number;
+  fairMarketValueInr: number;
+  residualValueInr: number;
+  valueBand: PortfolioValueBand;
+  notes: string[];
+}
+
+export interface PortfolioValuationEnterprise {
+  vehicleCount: number;
+  totalIndicativeListInr: number;
+  totalFairMarketValueInr: number;
+  totalResidualValueInr: number;
+  avgSohPercent: number;
+  portfolioRiskShare: number;
+}
+
+export interface PortfolioValuationPayload {
+  updatedAt: string;
+  currency: "INR";
+  disclaimer: string;
+  assumedLeaseMonths: number;
+  enterprise: PortfolioValuationEnterprise;
+  items: PortfolioValuationItem[];
+}
+
 export interface DriverClassification {
   driverId: string;
   label: string;

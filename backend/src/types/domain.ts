@@ -136,6 +136,45 @@ export interface AssetLifecycleHeuristics {
   flags: string[];
 }
 
+export type PortfolioValueBand = "strong" | "normal" | "soft" | "stressed";
+
+export interface PortfolioValuationItem {
+  vehicleId: string;
+  registration: string;
+  displayName: string;
+  model: string;
+  telemetryMode: TelemetryMode;
+  odometerKm: number;
+  sohPercent: number;
+  /** Demo comparable “new” price in INR (not an invoice). */
+  indicativeListPriceInr: number;
+  /** Model-estimated fair market value today (INR). */
+  fairMarketValueInr: number;
+  /** Lease-style residual / end-of-term value at assumed tenor (INR). */
+  residualValueInr: number;
+  valueBand: PortfolioValueBand;
+  notes: string[];
+}
+
+export interface PortfolioValuationEnterprise {
+  vehicleCount: number;
+  totalIndicativeListInr: number;
+  totalFairMarketValueInr: number;
+  totalResidualValueInr: number;
+  avgSohPercent: number;
+  /** Share of portfolio FMV in lifecycle watch or retire_candidate (0–1). */
+  portfolioRiskShare: number;
+}
+
+export interface PortfolioValuationPayload {
+  updatedAt: string;
+  currency: "INR";
+  disclaimer: string;
+  assumedLeaseMonths: number;
+  enterprise: PortfolioValuationEnterprise;
+  items: PortfolioValuationItem[];
+}
+
 export interface AssetLifecycleStage {
   vehicleId: string;
   registration: string;

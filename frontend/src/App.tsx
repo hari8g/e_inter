@@ -4,7 +4,7 @@ import AddVehicle from "@/pages/AddVehicle";
 import Analytics from "@/pages/Analytics";
 import AssetLifecycle from "@/pages/AssetLifecycle";
 import BatteryHealth from "@/pages/BatteryHealth";
-import CanBus from "@/pages/CanBus";
+import PortfolioValuation from "@/pages/PortfolioValuation";
 import CommandCenter from "@/pages/CommandCenter";
 import Drivers from "@/pages/Drivers";
 import GpsDevices from "@/pages/GpsDevices";
@@ -25,7 +25,7 @@ export default function App() {
           <Route path="/battery-health" element={<BatteryHealth />} />
           <Route path="/asset-lifecycle" element={<AssetLifecycle />} />
           <Route path="/drivers" element={<Drivers />} />
-          <Route path="/can-bus" element={<CanBus />} />
+          <Route path="/portfolio-value" element={<PortfolioValuation />} />
         </Route>
       </Routes>
       <MobileNav />

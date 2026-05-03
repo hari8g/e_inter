@@ -1,12 +1,12 @@
 import type {
   AssetLifecycleStage,
   BatteryHealthPoint,
-  CanSnapshot,
   CommandCenterPayload,
   DriverClassification,
   FleetPolicy,
   GpsDevice,
   MaintenanceItem,
+  PortfolioValuationPayload,
   Vehicle,
 } from "@/types/api";
 
@@ -126,8 +126,5 @@ export const api = {
   batteryHealth: () => j<{ updatedAt: string; items: BatteryHealthPoint[] }>("/analytics/battery-health"),
   assetLifecycle: () => j<{ updatedAt: string; items: AssetLifecycleStage[] }>("/analytics/asset-lifecycle"),
   drivers: () => j<{ updatedAt: string; items: DriverClassification[] }>("/analytics/driver-classification"),
-  canSnapshot: () =>
-    j<{ updatedAt: string; items: { vehicleId: string; registration: string; snapshot: CanSnapshot }[] }>(
-      "/can/snapshot",
-    ),
+  portfolioValuation: () => j<PortfolioValuationPayload>("/analytics/portfolio-valuation"),
 };
