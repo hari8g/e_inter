@@ -169,4 +169,6 @@ class FleetStore {
 
 export const fleetStore = new FleetStore();
 
-setInterval(() => fleetStore.tickCanNoise(), 8000);
+if (process.env.LISTEN === "1") {
+  setInterval(() => fleetStore.tickCanNoise(), 8000);
+}

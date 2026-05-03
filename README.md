@@ -69,14 +69,11 @@ The API keeps fleet state **in memory**. On Vercel, **each serverless invocation
 1. [Vercel Dashboard](https://vercel.com/dashboard) → **Add New…** → **Project** → import `hari8g/e_inter`.
 2. **Root Directory:** `backend` (monorepo subfolder).
 3. **Framework Preset:** Other (no framework), or let Vercel auto-detect.
-4. **Build Command:** leave default or use `npm run build` (optional typecheck / `dist` for local `npm start`; Vercel runs the `api/` entry from source).
+4. **Build Command:** leave default; `package.json` defines **`vercel-build`** (`npm run build`) so TypeScript is compiled before the function bundle.
 5. **Output Directory:** leave empty (not a static site).
 6. Deploy. Note the production URL, e.g. `https://e-inter-api.vercel.app`.
 
-The repo includes:
-
-- `backend/api/index.ts` — serverless entry that exports the Express `app` ([Express on Vercel](https://vercel.com/docs/frameworks/backend/express)).
-- `backend/vercel.json` — rewrites all routes to that function so `/api/v1/*` and `/` hit Express.
+The backend follows Vercel’s **Express on Vercel** layout: **`backend/src/index.ts`** default-exports the Express `app` (see [Using Express.js with Vercel](https://vercel.com/guides/using-express-with-vercel)). No `vercel.json` rewrite is required; `/`, `/api/v1/*`, etc. are handled by that single function. Local **`npm run dev`** / **`npm start`** set **`LISTEN=1`** so the process binds a port; Vercel only invokes the default export.
 
 ### 2) Frontend (Vite) project
 
