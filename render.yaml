@@ -1,0 +1,16 @@
+# Render Blueprint — deploy the API as a Web Service.
+# https://render.com/docs/blueprint-spec
+#
+# After first deploy, set your Vercel frontend env VITE_API_ORIGIN to this
+# service’s URL (e.g. https://e-inter-api.onrender.com), no trailing slash.
+
+services:
+  - type: web
+    name: e-inter-api
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/v1/health

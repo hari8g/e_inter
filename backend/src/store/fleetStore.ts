@@ -169,6 +169,7 @@ class FleetStore {
 
 export const fleetStore = new FleetStore();
 
-if (process.env.LISTEN === "1") {
+/** Demo CAN jitter: long-lived hosts only (Render sets RENDER; local dev uses LISTEN). */
+if (String(process.env.RENDER).toLowerCase() === "true" || process.env.LISTEN === "1") {
   setInterval(() => fleetStore.tickCanNoise(), 8000);
 }

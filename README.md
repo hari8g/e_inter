@@ -54,51 +54,55 @@ cd backend && npm run build && npm start
 cd frontend && npm run build && npm run preview
 ```
 
-For production you will normally set `VITE_*` or serve the SPA behind the same host as the API; in development the Vite proxy handles `/api/v1/*`.
+For production you normally set **`VITE_API_ORIGIN`** on the frontend host to your API’s public URL (see below). In development the Vite proxy sends `/api` to `localhost:8787`.
 
-## Deploying on Vercel
+## Deployment: **Render** (API) + **Vercel** (SPA)
 
-Use **two Vercel projects** from the same GitHub repo ([hari8g/e_inter](https://github.com/hari8g/e_inter)): one for the **API** and one for the **SPA**. The UI calls the API using `VITE_API_ORIGIN` (see [Environment variables](https://vercel.com/docs/projects/environment-variables)).
+Repo: [hari8g/e_inter](https://github.com/hari8g/e_inter). The **backend** is a long-lived Node **Web Service** on [Render](https://render.com). The **frontend** is a static/Vite SPA on [Vercel](https://vercel.com). The browser talks to Render using **`VITE_API_ORIGIN`**.
 
-### Important: serverless vs in-memory data
+### In-memory API note
 
-The API keeps fleet state **in memory**. On Vercel, **each serverless invocation can use a fresh instance**, so data may **reset** on cold starts and does not behave like a single long-lived server. This is fine for demos; production fleets should use a **database** and/or a **container** host (e.g. Fly.io, Railway, Render) for a stable Node process.
+Fleet state is **in memory**. On Render, the process stays up while the instance runs; free tiers may **sleep** after idle time (cold wake). Production fleets should use a **database** behind the same API.
 
-### 1) Backend (Express) project
+### 1) Backend on Render
+
+**Option A — Blueprint (recommended)**  
+Root file **`render.yaml`** defines a Web Service `e-inter-api` with `rootDir: backend`.
+
+1. [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint** → connect this GitHub repo.
+2. Apply the blueprint. Render runs **`npm ci && npm run build`** then **`npm start`** inside `backend/`.
+3. When the deploy is live, copy the service URL, e.g. `https://e-inter-api.onrender.com`.
+
+**Option B — Manual Web Service**  
+1. **New** → **Web Service** → connect the repo.  
+2. **Root Directory:** `backend`.  
+3. **Build Command:** `npm ci && npm run build`  
+4. **Start Command:** `npm start`  
+5. **Health check path:** `/api/v1/health`  
+6. Instance type: **Free** is fine for demos (expect cold starts).
+
+Render injects **`PORT`** and **`RENDER=true`**. `npm start` runs **`node dist/runLocal.js`**, which listens on `PORT`.
+
+### 2) Frontend on Vercel
 
 1. [Vercel Dashboard](https://vercel.com/dashboard) → **Add New…** → **Project** → import `hari8g/e_inter`.
-2. **Root Directory:** `backend` (monorepo subfolder).
-3. **Framework Preset:** Other (no framework), or let Vercel auto-detect.
-4. **Build Command:** leave default; `package.json` defines **`vercel-build`** (`npm run build`) so TypeScript is compiled before the function bundle.
-5. **Output Directory:** leave empty (not a static site).
-6. Deploy. Note the production URL, e.g. `https://e-inter-api.vercel.app`.
-
-The backend follows Vercel’s **Express on Vercel** layout: **`backend/src/app.ts`** default-exports the Express `app` (see [Using Express.js with Vercel](https://vercel.com/guides/using-express-with-vercel)). **`src/runLocal.ts`** is only for local **`npm run dev`** / **`npm start`** (not an auto-detected Vercel entry). No `vercel.json` rewrite is required; `/`, `/api/v1/*`, etc. are handled by that single function.
-
-### 2) Frontend (Vite) project
-
-1. **Add New Project** again (second project), same repo.
 2. **Root Directory:** `frontend`.
-3. **Framework Preset:** Vite (or Other with **Build Command** `npm run build` and **Output Directory** `dist`).
-4. Under **Environment Variables**, add:
+3. **Framework Preset:** Vite (or **Other** with **Build Command** `npm run build` and **Output Directory** `dist`).
+4. **Environment variables** → add:
 
    | Name | Value | Environments |
    |------|--------|----------------|
-   | `VITE_API_ORIGIN` | `https://<your-backend>.vercel.app` | Production (and Preview if you want previews to call a preview API) |
+   | `VITE_API_ORIGIN` | `https://<your-render-service>.onrender.com` | Production (and Preview if previews should hit a preview API) |
 
-   No trailing slash. Example: `https://e-inter-api.vercel.app`.
+   Use the **exact** Render URL: **`https://`**, host only, **no** trailing slash, **no** `/api/v1` in the value.
 
-5. Deploy. Open the frontend URL; the app will call `VITE_API_ORIGIN/api/v1/...`.
+5. **Redeploy** the frontend after changing env vars so Vite embeds them at build time.
 
-Local dev is unchanged: leave `VITE_API_ORIGIN` unset so requests use `/api/v1` and the Vite dev proxy (`frontend/vite.config.ts`).
+**Local dev:** leave **`VITE_API_ORIGIN`** unset; run **`npm run dev`** in **`backend/`** (port **8787**) and **`frontend/`**; Vite proxies `/api` per `frontend/vite.config.ts`.
 
 ### 3) CORS
 
-The API uses `cors({ origin: true })`, so browser calls from your Vercel frontend domain are allowed for this demo.
-
-### 4) Optional: `vercel dev`
-
-From `backend/` or `frontend/`, run `npx vercel dev` to emulate Vercel locally ([docs](https://vercel.com/docs/cli)).
+The API uses **`cors({ origin: true })`**, so requests from your **`*.vercel.app`** (or custom) frontend origin are reflected and allowed for this demo.
 
 ## API overview
 
@@ -122,12 +126,13 @@ Base path: **`/api/v1`**
 ```
 e-inter/
 ├── backend/           # Express API, seed data, prognosis enrichment
-│   ├── api/           # Vercel serverless entry (exports Express app)
 │   ├── src/
 │   └── package.json
-├── frontend/          # React SPA
+├── frontend/          # React SPA (deploy root = frontend/ on Vercel)
 │   ├── src/
+│   ├── vercel.json    # SPA fallback → index.html
 │   └── package.json
+├── render.yaml        # Optional Render Blueprint (Web Service → backend/)
 └── README.md
 ```
 

@@ -3,11 +3,13 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "LISTEN=1 tsx watch src/runLocal.ts",
     "build": "tsc",
-    "start": "LISTEN=1 node dist/runLocal.js",
-    "vercel-build": "npm run build"
+    "start": "node dist/runLocal.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
