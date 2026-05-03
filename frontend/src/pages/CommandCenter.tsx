@@ -77,8 +77,18 @@ export default function CommandCenter() {
       <div>
         <PageHeader title="Command center" description="Live operations for your Bengaluru 2W fleet." />
         <Card className="border-red-200 bg-red-50 text-sm text-red-800">
-          Could not reach API ({err}). Start the backend on port 8787 or run{" "}
-          <code className="rounded bg-white/80 px-1">npm run dev</code> in <code className="rounded bg-white/80 px-1">backend/</code>.
+          <p>
+            Could not reach API ({err}). For local dev, start the backend on port 8787 or run{" "}
+            <code className="rounded bg-white/80 px-1">npm run dev</code> in <code className="rounded bg-white/80 px-1">backend/</code>
+            .
+          </p>
+          {(err.toLowerCase().includes("pattern") || err.toLowerCase().includes("invalid url")) && (
+            <p className="mt-2 text-red-900">
+              If this is a production build, check <code className="rounded bg-white/80 px-1">VITE_API_ORIGIN</code> on
+              Vercel: use a full URL like <code className="rounded bg-white/80 px-1">https://your-api.vercel.app</code>{" "}
+              (include <code className="rounded bg-white/80 px-1">https://</code>), then rebuild the frontend.
+            </p>
+          )}
         </Card>
       </div>
     );
