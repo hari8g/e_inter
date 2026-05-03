@@ -184,9 +184,15 @@ export function enrichBatteryHealth(vehicles: Vehicle[], base: BatteryBase[]): B
 
     const wCal = Math.pow(odo / 44_000, 1.05) * 34 + (h % 8);
     const wCyc = clamp01((row.cycleEstimate - 360) / 820) * 30 + (row.trend === "degrading" ? 14 : row.trend === "improving" ? 4 : 8);
-    const wImb = clamp01(mv / (can ? 58 : 36)) * 36 + (imbalanceRisk !== "normal" ? 10 : 0);
-    const wTherm = v?.can ? clamp01((v.can.motorTempC - 32) / 21) * 28 + 4 : 7 + (h % 6);
-    const breakdownPastFade = normBreakdown(wCal, wCyc, wImb, wTherm);
+    // Fade-driver mix for ops charts: deterministic from pack id + odometer (not live CAN noise),
+    // so the attributed-fade view stays steady between refreshes while stress tiles still use live CAN.
+    const mvAttribution = can
+      ? 24 + (h % 33) + Math.min(14, Math.floor(odo / 12_000))
+      : mv;
+    const wImbAttribution = clamp01(mvAttribution / (can ? 58 : 36)) * 36 + (mvAttribution >= (can ? 44 : 28) ? 10 : 0);
+    const thermAttribution = can ? 5 + ((h >> 5) % 15) : 7 + (h % 6);
+    const wThermAttribution = can ? clamp01(thermAttribution / 16) * 28 + 4 : thermAttribution;
+    const breakdownPastFade = normBreakdown(wCal, wCyc, wImbAttribution, wThermAttribution);
 
     const deterioration: BatteryDeterioration = {
       past12mSohLossPct,

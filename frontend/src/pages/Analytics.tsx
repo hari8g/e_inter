@@ -71,36 +71,40 @@ export default function Analytics() {
     {
       to: "/battery-health",
       title: "Battery health",
-      desc: "SOH trajectories, 12m projection, and pack imbalance risk bands.",
+      operatorLine: "Which packs are losing SOH fastest, and why?",
+      desc: "Fleet SOH ranking, 12-month history blend, fade attribution (calendar / cycles / imbalance / thermal), and pack stress meters. Use before scheduling swaps or deep diagnostics.",
       icon: BatteryCharging,
-      stat: summary ? `${summary.degrading} degrading packs` : "—",
+      stat: summary ? `${summary.degrading} vehicle(s) on a degrading SOH trend` : "—",
       spark: sparkSafe,
       sparkColor: chart.brand,
     },
     {
       to: "/asset-lifecycle",
       title: "Asset lifecycle",
-      desc: "Wear curves, major-service windows, and RUL envelopes.",
+      operatorLine: "When is the next major service, and how hard is the asset being used?",
+      desc: "Odometer-forward view: wear index, projected major-service window, duty and thermal hints. Good for workshop planning and retire/watch decisions.",
       icon: Route,
-      stat: "Scatter + wear index",
+      stat: "Open for wear curve and service horizon",
       spark: wearSpark.length ? wearSpark : [{ v: 42 }],
       sparkColor: chart.warn,
     },
     {
       to: "/drivers",
       title: "Driver classification",
-      desc: "Radar fingerprints and safety momentum for coaching.",
+      operatorLine: "Who needs coaching on safety and efficiency?",
+      desc: "Demo driver cohort with band (A–C), radar scores, and safety trajectory. Pair with incidents or complaints to prioritise training.",
       icon: Shield,
-      stat: summary ? `${summary.bandC} in band C` : "—",
+      stat: summary ? `${summary.bandC} driver(s) currently in band C (highest watch)` : "—",
       spark: driverSpark.length ? driverSpark : [{ v: 75 }],
       sparkColor: chart.accent,
     },
     {
       to: "/can-bus",
       title: "CAN telemetry",
-      desc: "Live BMS / inverter aggregates powering the models above.",
+      operatorLine: "What live BMS / inverter signals are feeding the models?",
+      desc: "Snapshot of motor temp, pack voltage, cell spread, and BMS quality for CAN-equipped vehicles. Confirms whether data quality supports the battery views.",
       icon: Activity,
-      stat: summary ? `${summary.can} CAN assets` : "—",
+      stat: summary ? `${summary.can} asset(s) with CAN + GPS stream` : "—",
       spark: [
         { v: 3 },
         { v: 5 },
@@ -118,34 +122,49 @@ export default function Analytics() {
   return (
     <div className="pb-20 lg:pb-0">
       <PageHeader
-        title="Analytics suite"
-        description="Each module ships prognosis-aware charts — sparklines here are quick pulse checks before you dive into the full workspaces."
+        title="Analytics hub"
+        description="One place for fleet analysts and control-room operators: pick a workspace below. Each card opens the full module; sparklines are a quick pulse only."
         actions={
           <Link
             to="/"
             className="inline-flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink shadow-sm hover:bg-surface-page"
           >
             <BarChart3 className="h-4 w-4 text-brand" />
-            Back to ops
+            Back to command centre
           </Link>
         }
       />
+
+      <Card className="mb-6 border-brand-border/60 bg-brand-muted/25 p-4 text-sm leading-relaxed text-ink">
+        <div className="text-xs font-bold uppercase tracking-wide text-brand">How to use this page</div>
+        <ul className="mt-2 list-inside list-disc space-y-1 text-ink-muted marker:text-brand">
+          <li>Start with <strong className="text-ink">Battery health</strong> if you are triaging pack risk or SOH complaints.</li>
+          <li>Use <strong className="text-ink">Asset lifecycle</strong> for odometer-based service planning and end-of-life watch.</li>
+          <li>Open <strong className="text-ink">Driver classification</strong> for coaching queues (bands and safety trend).</li>
+          <li>Check <strong className="text-ink">CAN telemetry</strong> when you need to confirm live BMS feeds for CAN assets.</li>
+        </ul>
+      </Card>
+
       <div className="grid gap-5 md:grid-cols-2">
         {tiles.map((t) => (
           <Link key={t.to} to={t.to} className="group block">
             <Card className="h-full overflow-hidden transition group-hover:border-brand-border group-hover:shadow-md">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-xs font-semibold uppercase tracking-wide text-brand">Module</div>
+                  <div className="text-xs font-semibold uppercase tracking-wide text-brand">Workspace</div>
                   <h2 className="mt-1 text-lg font-semibold text-ink group-hover:text-brand">{t.title}</h2>
                 </div>
                 <t.icon className="h-5 w-5 text-ink-faint group-hover:text-brand" />
               </div>
-              <p className="mt-3 text-sm leading-relaxed text-ink-muted">{t.desc}</p>
+              <p className="mt-1 text-xs font-medium text-ink">{t.operatorLine}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{t.desc}</p>
               <div className="mt-4 rounded-lg border border-line bg-surface-page/80 px-2 py-2">
                 <Spark data={t.spark} color={t.sparkColor} />
               </div>
               <div className="mt-3 text-xs font-semibold text-ink">{t.stat}</div>
+              <div className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-brand opacity-0 transition group-hover:opacity-100">
+                Open module →
+              </div>
             </Card>
           </Link>
         ))}

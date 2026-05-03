@@ -157,7 +157,7 @@ export default function BatteryHealth() {
         setUpdatedAt(r.updatedAt);
       });
     load();
-    const t = setInterval(load, 12000);
+    const t = setInterval(load, 120_000);
     return () => {
       alive = false;
       clearInterval(t);
@@ -179,10 +179,16 @@ export default function BatteryHealth() {
 
   const stackChartData = useMemo(
     () =>
-      items.map((b) => ({
-        reg: b.registration.length > 11 ? `${b.registration.slice(0, 10)}…` : b.registration,
-        ...b.deterioration.breakdownPastFade,
-      })),
+      items.map((b) => {
+        const { calendarAgeing, cyclicElectrical, cellImbalance, thermalElectrical } = b.deterioration.breakdownPastFade;
+        return {
+          reg: b.registration.length > 11 ? `${b.registration.slice(0, 10)}…` : b.registration,
+          calendarAgeing: Math.round(calendarAgeing),
+          cyclicElectrical: Math.round(cyclicElectrical),
+          cellImbalance: Math.round(cellImbalance),
+          thermalElectrical: Math.round(thermalElectrical),
+        };
+      }),
     [items],
   );
 
@@ -194,10 +200,11 @@ export default function BatteryHealth() {
       />
       <div className="mb-6 flex flex-wrap items-center justify-between gap-2 text-xs text-ink-muted">
         <span>
-          Last refresh{" "}
+          Last data refresh{" "}
           {updatedAt
             ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "medium" }).format(new Date(updatedAt))
-            : "—"}
+            : "—"}{" "}
+          · auto-refresh ~2 min
         </span>
         <span className="rounded-full bg-brand-muted/60 px-2 py-1 font-medium text-brand ring-1 ring-brand-border">
           Prognosis threshold · SOH {items[0]?.prognosis.thresholdSoh ?? 80}%
@@ -267,7 +274,10 @@ export default function BatteryHealth() {
             <h2 className="text-sm font-semibold text-ink">Attributed fade drivers (trailing 12 mo)</h2>
           </div>
           <p className="mb-4 text-xs text-ink-muted">
-            Normalised model shares — compare across assets to see whether calendar, cycles, imbalance, or thermal terms dominate.
+            Each bar is the{" "}
+            <strong className="font-semibold text-ink">share of responsibility</strong> the model assigns for past-year fade (always 100% across the four drivers). Values
+            are <strong className="font-semibold text-ink">stable per vehicle</strong> so this wall-chart does not flicker with live CAN noise; the page refreshes about every
+            2 minutes. Compare rows to see who is calendar-led vs cycle-led vs imbalance-led.
           </p>
           <div
             className="min-h-[200px] w-full max-h-[440px]"
@@ -288,10 +298,28 @@ export default function BatteryHealth() {
                   formatter={(value: number, name: string) => [`${Math.round(Number(value) * 100)}% of mix`, name]}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="calendarAgeing" name="Calendar" stackId="a" fill={BD_COLORS.calendarAgeing} />
-                <Bar dataKey="cyclicElectrical" name="Cyclic" stackId="a" fill={BD_COLORS.cyclicElectrical} />
-                <Bar dataKey="cellImbalance" name="Δcell" stackId="a" fill={BD_COLORS.cellImbalance} />
-                <Bar dataKey="thermalElectrical" name="Thermal" stackId="a" fill={BD_COLORS.thermalElectrical} />
+                <Bar
+                  dataKey="calendarAgeing"
+                  name="Calendar"
+                  stackId="a"
+                  fill={BD_COLORS.calendarAgeing}
+                  isAnimationActive={false}
+                />
+                <Bar
+                  dataKey="cyclicElectrical"
+                  name="Cyclic"
+                  stackId="a"
+                  fill={BD_COLORS.cyclicElectrical}
+                  isAnimationActive={false}
+                />
+                <Bar dataKey="cellImbalance" name="Δcell" stackId="a" fill={BD_COLORS.cellImbalance} isAnimationActive={false} />
+                <Bar
+                  dataKey="thermalElectrical"
+                  name="Thermal"
+                  stackId="a"
+                  fill={BD_COLORS.thermalElectrical}
+                  isAnimationActive={false}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
