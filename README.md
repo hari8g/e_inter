@@ -73,7 +73,7 @@ The API keeps fleet state **in memory**. On Vercel, **each serverless invocation
 5. **Output Directory:** leave empty (not a static site).
 6. Deploy. Note the production URL, e.g. `https://e-inter-api.vercel.app`.
 
-The backend follows Vercel’s **Express on Vercel** layout: **`backend/src/index.ts`** default-exports the Express `app` (see [Using Express.js with Vercel](https://vercel.com/guides/using-express-with-vercel)). No `vercel.json` rewrite is required; `/`, `/api/v1/*`, etc. are handled by that single function. Local **`npm run dev`** / **`npm start`** set **`LISTEN=1`** so the process binds a port; Vercel only invokes the default export.
+The backend follows Vercel’s **Express on Vercel** layout: **`backend/src/app.ts`** default-exports the Express `app` (see [Using Express.js with Vercel](https://vercel.com/guides/using-express-with-vercel)). **`src/runLocal.ts`** is only for local **`npm run dev`** / **`npm start`** (not an auto-detected Vercel entry). No `vercel.json` rewrite is required; `/`, `/api/v1/*`, etc. are handled by that single function.
 
 ### 2) Frontend (Vite) project
 

@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "LISTEN=1 tsx watch src/index.ts",
+    "dev": "LISTEN=1 tsx watch src/runLocal.ts",
     "build": "tsc",
-    "start": "LISTEN=1 node dist/index.js",
+    "start": "LISTEN=1 node dist/runLocal.js",
     "vercel-build": "npm run build"
   },
   "dependencies": {

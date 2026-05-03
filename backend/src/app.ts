@@ -15,3 +15,6 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/v1", apiRouter);
+
+/** Vercel may choose `src/app.ts` as the Express entry; a default export is required. */
+export default app;
