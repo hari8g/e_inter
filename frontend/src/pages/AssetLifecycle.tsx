@@ -1,4 +1,4 @@
-import { CalendarClock, Gauge, Sparkles } from "lucide-react";
+import { CalendarClock, ClipboardList, Gauge, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   Area,
@@ -83,7 +83,7 @@ export default function AssetLifecycle() {
     <div className="pb-20 lg:pb-0">
       <PageHeader
         title="Asset lifecycle management"
-        description="Each card leads with live odometer, a calendar-dated major-service horizon, and heuristic indices derived from duty, thermal proxies, SOC depth, and telemetry richness."
+        description="Each vehicle card opens with an operator diagnosis (what it means and what to do), then service dates, wear chart, and numeric heuristics for reference."
       />
 
       <Card className="mb-8 p-5">
@@ -162,6 +162,39 @@ export default function AssetLifecycle() {
                   </span>
                 </div>
 
+                <div className="mt-5 rounded-xl border border-emerald-200/90 bg-emerald-50/50 p-4 ring-1 ring-emerald-100/80">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-700 text-white shadow-sm">
+                      <ClipboardList className="h-5 w-5" aria-hidden />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-900/90">Operator diagnosis</div>
+                      <p className="mt-1.5 text-sm font-semibold leading-snug text-emerald-950">
+                        {a.operatorSummary ??
+                          `${a.registration} — diagnosis block unavailable; refresh after deploying the latest API.`}
+                      </p>
+                      <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-900/75">What we see</div>
+                          <ul className="mt-1.5 list-outside list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-emerald-950/95">
+                            {(a.operatorFindings ?? []).map((line, i) => (
+                              <li key={i}>{line}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-900/75">Suggested next steps</div>
+                          <ol className="mt-1.5 list-outside list-decimal space-y-1.5 pl-4 text-xs font-medium leading-relaxed text-emerald-950">
+                            {(a.operatorActions ?? []).map((line, i) => (
+                              <li key={i}>{line}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="mt-5 grid gap-3 rounded-xl border border-brand-border/60 bg-white/90 p-4 sm:grid-cols-2">
                   <div className="flex gap-3 sm:col-span-2">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand text-white">
@@ -224,8 +257,11 @@ export default function AssetLifecycle() {
               <div className="border-t border-line bg-surface-page/60 px-4 py-4">
                 <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-brand">
                   <Sparkles className="h-4 w-4" aria-hidden />
-                  Advanced heuristics
+                  Reference indices (0–100)
                 </div>
+                <p className="mb-3 text-[11px] leading-relaxed text-ink-muted">
+                  Numbers below support the diagnosis above; higher duty / thermal scores usually mean harder life for the pack.
+                </p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <HeuristicBar
                     label="Duty cycle index"

@@ -146,6 +146,10 @@ export interface AssetLifecycleStage {
   notes: string;
   wearSeries: { km: number; wearIndex: number }[];
   heuristics: AssetLifecycleHeuristics;
+  /** Plain-language readout for control-room / workshop operators. */
+  operatorSummary: string;
+  operatorFindings: string[];
+  operatorActions: string[];
   prognosis: {
     remainingUsefulLifeKm: number;
     majorServiceWindowKm: [number, number];
