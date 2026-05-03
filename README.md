@@ -56,6 +56,53 @@ cd frontend && npm run build && npm run preview
 
 For production you will normally set `VITE_*` or serve the SPA behind the same host as the API; in development the Vite proxy handles `/api/v1/*`.
 
+## Deploying on Vercel
+
+Use **two Vercel projects** from the same GitHub repo ([hari8g/e_inter](https://github.com/hari8g/e_inter)): one for the **API** and one for the **SPA**. The UI calls the API using `VITE_API_ORIGIN` (see [Environment variables](https://vercel.com/docs/projects/environment-variables)).
+
+### Important: serverless vs in-memory data
+
+The API keeps fleet state **in memory**. On Vercel, **each serverless invocation can use a fresh instance**, so data may **reset** on cold starts and does not behave like a single long-lived server. This is fine for demos; production fleets should use a **database** and/or a **container** host (e.g. Fly.io, Railway, Render) for a stable Node process.
+
+### 1) Backend (Express) project
+
+1. [Vercel Dashboard](https://vercel.com/dashboard) → **Add New…** → **Project** → import `hari8g/e_inter`.
+2. **Root Directory:** `backend` (monorepo subfolder).
+3. **Framework Preset:** Other (no framework), or let Vercel auto-detect.
+4. **Build Command:** leave default or use `npm run build` (optional typecheck / `dist` for local `npm start`; Vercel runs the `api/` entry from source).
+5. **Output Directory:** leave empty (not a static site).
+6. Deploy. Note the production URL, e.g. `https://e-inter-api.vercel.app`.
+
+The repo includes:
+
+- `backend/api/index.ts` — serverless entry that exports the Express `app` ([Express on Vercel](https://vercel.com/docs/frameworks/backend/express)).
+- `backend/vercel.json` — rewrites all routes to that function so `/api/v1/*` and `/` hit Express.
+
+### 2) Frontend (Vite) project
+
+1. **Add New Project** again (second project), same repo.
+2. **Root Directory:** `frontend`.
+3. **Framework Preset:** Vite (or Other with **Build Command** `npm run build` and **Output Directory** `dist`).
+4. Under **Environment Variables**, add:
+
+   | Name | Value | Environments |
+   |------|--------|----------------|
+   | `VITE_API_ORIGIN` | `https://<your-backend>.vercel.app` | Production (and Preview if you want previews to call a preview API) |
+
+   No trailing slash. Example: `https://e-inter-api.vercel.app`.
+
+5. Deploy. Open the frontend URL; the app will call `VITE_API_ORIGIN/api/v1/...`.
+
+Local dev is unchanged: leave `VITE_API_ORIGIN` unset so requests use `/api/v1` and the Vite dev proxy (`frontend/vite.config.ts`).
+
+### 3) CORS
+
+The API uses `cors({ origin: true })`, so browser calls from your Vercel frontend domain are allowed for this demo.
+
+### 4) Optional: `vercel dev`
+
+From `backend/` or `frontend/`, run `npx vercel dev` to emulate Vercel locally ([docs](https://vercel.com/docs/cli)).
+
 ## API overview
 
 Base path: **`/api/v1`**
@@ -78,6 +125,7 @@ Base path: **`/api/v1`**
 ```
 e-inter/
 ├── backend/           # Express API, seed data, prognosis enrichment
+│   ├── api/           # Vercel serverless entry (exports Express app)
 │   ├── src/
 │   └── package.json
 ├── frontend/          # React SPA

@@ -10,7 +10,9 @@ import type {
   Vehicle,
 } from "@/types/api";
 
-const base = "/api/v1";
+/** Production: set VITE_API_ORIGIN to backend origin (no trailing slash), e.g. https://e-inter-api.vercel.app */
+const origin = (import.meta.env.VITE_API_ORIGIN as string | undefined)?.replace(/\/$/, "") ?? "";
+const base = origin ? `${origin}/api/v1` : "/api/v1";
 
 async function j<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${base}${path}`, {
