@@ -90,9 +90,9 @@ export default function Analytics() {
     },
     {
       to: "/drivers",
-      title: "Driver classification",
-      operatorLine: "Who needs coaching on safety and efficiency?",
-      desc: "Demo driver cohort with band (A–C), radar scores, and safety trajectory. Pair with incidents or complaints to prioritise training.",
+      title: "Drivers",
+      operatorLine: "Who needs a safety chat or extra coaching?",
+      desc: "Simple scores and weekly safety trend (0–100). Bands A/B/C show who is on track and who needs help first.",
       icon: Shield,
       stat: summary ? `${summary.bandC} driver(s) currently in band C (highest watch)` : "—",
       spark: driverSpark.length ? driverSpark : [{ v: 75 }],
@@ -140,7 +140,7 @@ export default function Analytics() {
         <ul className="mt-2 list-inside list-disc space-y-1 text-ink-muted marker:text-brand">
           <li>Start with <strong className="text-ink">Battery health</strong> if you are triaging pack risk or SOH complaints.</li>
           <li>Use <strong className="text-ink">Asset lifecycle</strong> for odometer-based service planning and end-of-life watch.</li>
-          <li>Open <strong className="text-ink">Driver classification</strong> for coaching queues (bands and safety trend).</li>
+          <li>Open <strong className="text-ink">Drivers</strong> for coaching queues (bands and weekly safety line).</li>
           <li>Check <strong className="text-ink">CAN telemetry</strong> when you need to confirm live BMS feeds for CAN assets.</li>
         </ul>
       </Card>

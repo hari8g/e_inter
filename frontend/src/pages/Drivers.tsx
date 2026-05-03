@@ -27,13 +27,25 @@ const bandColor: Record<DriverClassification["band"], string> = {
   C: "#dc2626",
 };
 
+function bandInPlainWords(b: DriverClassification["band"]): string {
+  if (b === "A") return "Top group — riding is safe and steady.";
+  if (b === "B") return "Middle group — a few habits could be better.";
+  return "Needs help soon — safety or style is off track.";
+}
+
+function priorityPlain(p: DriverClassification["prognosis"]["priority"]): { label: string; hint: string } {
+  if (p === "intervene") return { label: "Needs attention now", hint: "Manager or trainer should step in this week." };
+  if (p === "coach") return { label: "Coaching suggested", hint: "Short talk or ride-along usually fixes this." };
+  return { label: "On track", hint: "Keep routine check-ins only." };
+}
+
 function radarRows(d: DriverClassification) {
   return [
     { subject: "Safety", score: d.safetyScore },
-    { subject: "Smoothness", score: d.profile.smoothness },
-    { subject: "Eco drive", score: d.profile.ecoDrive },
-    { subject: "Compliance", score: d.profile.compliance },
-    { subject: "Fatigue risk", score: 100 - d.profile.fatigueRisk },
+    { subject: "Smooth riding", score: d.profile.smoothness },
+    { subject: "Easy on battery", score: d.profile.ecoDrive },
+    { subject: "Follows rules", score: d.profile.compliance },
+    { subject: "Alertness", score: 100 - d.profile.fatigueRisk },
   ];
 }
 
@@ -53,39 +65,45 @@ export default function Drivers() {
   return (
     <div className="pb-20 lg:pb-0">
       <PageHeader
-        title="Driver classification"
-        description="Radar view compresses multi-axis behaviour; the trailing safety curve shows momentum into the 90-day band projection. Use both panels when designing coaching cadence."
+        title="Drivers — safety and style"
+        description="Each card shows five simple scores (0–100, higher is better except where noted), a spider chart for a quick shape, and a line of weekly safety scores from 0 so you can see real ups and downs."
       />
       <div className="grid gap-6">
         {items.map((d) => {
           const stroke = bandColor[d.band];
+          const pri = priorityPlain(d.prognosis.priority);
           return (
             <Card key={d.driverId} className="overflow-hidden p-0">
               <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">Driver</div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-muted">Rider name (demo)</div>
                   <div className="text-lg font-semibold text-ink">{d.label}</div>
+                  <p className="mt-1 max-w-xl text-sm text-ink-muted">{bandInPlainWords(d.band)}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span
                     className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white shadow"
                     style={{ background: stroke }}
+                    title={bandInPlainWords(d.band)}
                   >
                     {d.band}
                   </span>
-                  <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ring-1 ${priorityStyles(d.prognosis.priority)}`}>
-                    {d.prognosis.priority}
-                  </span>
-                  <span className="text-xs text-ink-muted">
-                    90d → band <span className="font-semibold text-ink">{d.prognosis.projectedBand90d}</span>
-                  </span>
+                  <div className="flex flex-col items-end gap-0.5">
+                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase ring-1 ${priorityStyles(d.prognosis.priority)}`}>
+                      {pri.label}
+                    </span>
+                    <span className="max-w-[200px] text-right text-[10px] text-ink-muted">{pri.hint}</span>
+                  </div>
                 </div>
               </div>
               <div className="grid gap-4 p-4 lg:grid-cols-12">
                 <div className="lg:col-span-4">
                   <div className="mb-2 text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                    Behaviour fingerprint
+                    Five scores at a glance
                   </div>
+                  <p className="mb-2 text-center text-[10px] leading-snug text-ink-faint">
+                    Spider chart: further from centre = better on that row.
+                  </p>
                   <div className="h-[260px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart cx="50%" cy="50%" outerRadius={100} data={radarRows(d)}>
@@ -93,21 +111,22 @@ export default function Drivers() {
                         <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: chart.label }} />
                         <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: chart.label }} />
                         <Radar
-                          name="Score"
+                          name="Score / 100"
                           dataKey="score"
                           stroke={stroke}
                           fill={stroke}
                           fillOpacity={0.28}
                           strokeWidth={2}
+                          isAnimationActive={false}
                         />
-                        <Tooltip {...tooltipProps} formatter={(v: number) => [v, "Score"]} />
+                        <Tooltip {...tooltipProps} formatter={(v: number) => [`${v} / 100`, ""]} />
                       </RadarChart>
                     </ResponsiveContainer>
                   </div>
                 </div>
                 <div className="lg:col-span-8">
                   <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                    Safety score trajectory (rolling weeks)
+                    Weekly safety score (0 = worst we show, 100 = best)
                   </div>
                   <div className="h-[260px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -120,17 +139,18 @@ export default function Drivers() {
                         </defs>
                         <CartesianGrid {...cartesianGrid} />
                         <XAxis dataKey="week" {...axisProps} />
-                        <YAxis domain={[40, 100]} {...axisProps} width={32} />
-                        <Tooltip {...tooltipProps} />
+                        <YAxis domain={[0, 100]} {...axisProps} width={36} />
+                        <Tooltip {...tooltipProps} formatter={(v: number) => [`${v} / 100`, "Safety"]} />
                         <Legend wrapperStyle={{ fontSize: 11 }} />
                         <Line
                           type="monotone"
                           dataKey="score"
-                          name="Safety"
+                          name="Safety score"
                           stroke={stroke}
                           strokeWidth={2.5}
                           dot={{ r: 3, fill: stroke }}
                           activeDot={{ r: 5 }}
+                          isAnimationActive={false}
                         />
                       </LineChart>
                     </ResponsiveContainer>
@@ -138,22 +158,31 @@ export default function Drivers() {
                 </div>
               </div>
               <div className="border-t border-line bg-brand-muted/15 px-5 py-4">
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-brand">Prognosis</div>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-brand">What to do next</div>
                 <p className="mt-2 text-sm leading-relaxed text-ink-muted">{d.prognosis.summary}</p>
-                <div className="mt-3 flex flex-wrap gap-4 text-xs text-ink-muted">
-                  <span>
-                    Harsh events (7d) <span className="font-semibold text-ink">{d.harshEvents7d}</span>
-                  </span>
-                  <span>
-                    Energy %tile <span className="font-semibold text-ink">{d.energyEfficiencyPercentile}</span>
-                  </span>
-                  <span>
-                    Review by <span className="font-semibold text-ink">{d.prognosis.reviewBy}</span>
-                  </span>
+                <div className="mt-3 grid gap-2 text-sm text-ink sm:grid-cols-3">
+                  <div className="rounded-lg border border-line bg-white px-3 py-2">
+                    <div className="text-[10px] font-semibold uppercase text-ink-muted">Hard events (7 days)</div>
+                    <div className="text-lg font-semibold text-ink">{d.harshEvents7d}</div>
+                    <div className="text-[10px] text-ink-muted">Sudden brakes / harsh riding picks</div>
+                  </div>
+                  <div className="rounded-lg border border-line bg-white px-3 py-2">
+                    <div className="text-[10px] font-semibold uppercase text-ink-muted">Vs other riders (efficiency)</div>
+                    <div className="text-lg font-semibold text-ink">{d.energyEfficiencyPercentile}th</div>
+                    <div className="text-[10px] text-ink-muted">Percentile — 50 is middle of the fleet</div>
+                  </div>
+                  <div className="rounded-lg border border-line bg-white px-3 py-2">
+                    <div className="text-[10px] font-semibold uppercase text-ink-muted">Next formal check-in</div>
+                    <div className="text-base font-semibold text-ink">{d.prognosis.reviewBy}</div>
+                    <div className="text-[10px] text-ink-muted">Suggested review month</div>
+                  </div>
                 </div>
-                <div className="mt-3 flex items-center gap-2 text-xs text-ink-muted">
-                  <Shield className="h-4 w-4 shrink-0 text-brand" />
-                  Banding uses fleet-relative thresholds; connect HRIS for named roster rollouts.
+                <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-white/80 px-3 py-2 text-xs text-ink-muted">
+                  <Shield className="h-4 w-4 shrink-0 text-brand" aria-hidden />
+                  <span>
+                    In the next three months we expect this rider to stay in <strong className="text-ink">band {d.prognosis.projectedBand90d}</strong> if nothing changes — use
+                    that to plan who gets extra coaching first.
+                  </span>
                 </div>
               </div>
             </Card>

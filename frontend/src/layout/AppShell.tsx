@@ -23,7 +23,7 @@ const nav = [
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/battery-health", label: "Battery health", icon: BatteryCharging },
   { to: "/asset-lifecycle", label: "Asset lifecycle", icon: Route },
-  { to: "/drivers", label: "Driver classification", icon: Shield },
+  { to: "/drivers", label: "Drivers", icon: Shield },
   { to: "/can-bus", label: "CAN telemetry", icon: Activity },
 ];
 

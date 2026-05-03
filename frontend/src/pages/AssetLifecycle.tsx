@@ -227,31 +227,47 @@ export default function AssetLifecycle() {
               </div>
 
               <div className="h-[200px] w-full px-2 pt-3">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={a.wearSeries} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id={`wear-${a.vehicleId}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={stageFill[a.stage]} stopOpacity={0.25} />
-                        <stop offset="100%" stopColor={stageFill[a.stage]} stopOpacity={0.02} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid {...cartesianGrid} />
-                    <XAxis dataKey="km" tickFormatter={(v) => `${Math.round(v / 1000)}k`} {...axisProps} />
-                    <YAxis domain={[0, 100]} {...axisProps} width={32} />
-                    <Tooltip {...tooltipProps} formatter={(v: number) => [v, "Wear index"]} labelFormatter={(l) => `${l} km`} />
-                    <Legend wrapperStyle={{ fontSize: 11 }} />
-                    <ReferenceArea x1={lo} x2={hi} fill={chart.warn} fillOpacity={0.06} />
-                    <Area
-                      type="monotone"
-                      dataKey="wearIndex"
-                      name="Wear index"
-                      stroke={stageFill[a.stage]}
-                      fill={`url(#wear-${a.vehicleId})`}
-                      strokeWidth={2}
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
+                {(() => {
+                  const wearVals = a.wearSeries.map((w) => w.wearIndex);
+                  const wearMax = Math.max(5, ...wearVals);
+                  const wearYHi = Math.min(100, Math.max(20, Math.ceil(wearMax / 5) * 5 + 8));
+                  return (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={a.wearSeries} margin={{ left: 0, right: 8, top: 4, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id={`wear-${a.vehicleId}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={stageFill[a.stage]} stopOpacity={0.25} />
+                            <stop offset="100%" stopColor={stageFill[a.stage]} stopOpacity={0.02} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid {...cartesianGrid} />
+                        <XAxis dataKey="km" tickFormatter={(v) => `${Math.round(v / 1000)}k`} {...axisProps} />
+                        <YAxis domain={[0, wearYHi]} {...axisProps} width={36} tickFormatter={(v) => `${v}`} />
+                        <Tooltip
+                          {...tooltipProps}
+                          formatter={(v: number) => [`${v} / 100`, "Wear index"]}
+                          labelFormatter={(l) => `${l} km`}
+                        />
+                        <Legend wrapperStyle={{ fontSize: 11 }} />
+                        <ReferenceArea x1={lo} x2={hi} fill={chart.warn} fillOpacity={0.06} />
+                        <Area
+                          type="monotone"
+                          dataKey="wearIndex"
+                          name="Wear index (0 = light, higher = more wear)"
+                          stroke={stageFill[a.stage]}
+                          fill={`url(#wear-${a.vehicleId})`}
+                          strokeWidth={2}
+                          isAnimationActive={false}
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  );
+                })()}
               </div>
+              <p className="border-b border-line px-4 pb-3 text-center text-[11px] leading-snug text-ink-muted">
+                Vertical axis starts at <strong className="text-ink">0</strong> (almost new) and runs up only as far as this asset needs, so the line is easier to read than a
+                fixed 0–100 scale.
+              </p>
 
               <div className="border-t border-line bg-surface-page/60 px-4 py-4">
                 <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-brand">

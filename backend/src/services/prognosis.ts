@@ -380,14 +380,27 @@ export function enrichLifecycle(vehicles: Vehicle[], base: LifecycleBase[]): Ass
     const startKm = Math.max(0, v.odometerKm - 9000);
     const series: { km: number; wearIndex: number }[] = [];
     const steps = 10;
+    /** End-point wear (today) — same rough scale as before. */
+    const endWear = Math.min(
+      100,
+      Math.round(35 + (v.odometerKm / 250) + ((h >> 11) & 7) + (v.telemetryMode === "can_gps" ? 6 : 0)),
+    );
+    /** Start near 0 at the left of the window so the chart reads as “build-up over life”, not a floating band. */
+    const startWear = Math.max(0, Math.min(6, 1 + (h % 4) * 0.8));
     for (let i = 0; i <= steps; i++) {
       const km = startKm + ((v.odometerKm - startKm) * i) / steps;
-      const wearIndex = Math.min(
-        100,
-        Math.round(35 + (km / 250) + ((h >> i) & 7) + (v.telemetryMode === "can_gps" ? 6 : 0)),
-      );
+      const t = i / steps;
+      const u = smoothstep01(t);
+      let wearIndex = startWear + (endWear - startWear) * u + ((((h >> i) & 3) - 1) * 0.35);
+      wearIndex = clamp(round1(wearIndex), 0, 100);
       series.push({ km: Math.round(km), wearIndex });
     }
+    for (let k = 1; k < series.length; k++) {
+      if (series[k]!.wearIndex + 1e-6 < series[k - 1]!.wearIndex) {
+        series[k] = { ...series[k]!, wearIndex: series[k - 1]!.wearIndex };
+      }
+    }
+    series[series.length - 1] = { ...series[series.length - 1]!, wearIndex: endWear };
     const rulKm = Math.max(2000, 52000 - v.odometerKm - (h % 4000));
     const lo = row.projectedMajorServiceKm - 1800;
     const hi = row.projectedMajorServiceKm + 2200;
@@ -515,10 +528,10 @@ export function enrichDrivers(base: DriverSeed[]): DriverClassification[] {
       d.band === "C" || projectedBand90d === "C" ? "intervene" : d.band === "B" ? "coach" : "maintain";
     const summary =
       priority === "intervene"
-        ? "Harsh energy events trending up — assign supervised route and cap throttle map for 30 days."
+        ? "Riding style needs a closer look: pair this rider with a supervisor for a few weeks and cut harsh acceleration until scores improve."
         : priority === "coach"
-          ? "Efficiency headroom with acceptable safety — micro-coaching on anticipatory regen likely sufficient."
-          : "Stable high performer — use as peer benchmark in fleet gamification.";
+          ? "Doing okay overall — a short refresher on smooth riding and saving battery will lift scores without much hassle."
+          : "Strong, safe riding — good example for new joiners; keep recognising steady habits.";
     return {
       ...d,
       profile: { smoothness, ecoDrive, compliance, fatigueRisk },
