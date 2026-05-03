@@ -16,6 +16,7 @@ import {
   ZAxis,
 } from "recharts";
 import { api } from "@/api/client";
+import { resolveLifecycleOperatorReadout } from "@/lib/lifecycleOperatorReadout";
 import { chart, cartesianGrid, axisProps, tooltipProps } from "@/lib/chartTheme";
 import { PageHeader } from "@/layout/AppShell";
 import { Card } from "@/ui/Card";
@@ -135,6 +136,7 @@ export default function AssetLifecycle() {
         {items.map((a) => {
           const [lo, hi] = a.prognosis.majorServiceWindowKm;
           const H = a.heuristics;
+          const op = resolveLifecycleOperatorReadout(a);
           return (
             <Card key={a.vehicleId} className="overflow-hidden p-0">
               <div className="border-b border-line bg-gradient-to-br from-brand-muted/50 to-white px-5 py-5">
@@ -169,15 +171,12 @@ export default function AssetLifecycle() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-[10px] font-bold uppercase tracking-wide text-emerald-900/90">Operator diagnosis</div>
-                      <p className="mt-1.5 text-sm font-semibold leading-snug text-emerald-950">
-                        {a.operatorSummary ??
-                          `${a.registration} — diagnosis block unavailable; refresh after deploying the latest API.`}
-                      </p>
+                      <p className="mt-1.5 text-sm font-semibold leading-snug text-emerald-950">{op.summary}</p>
                       <div className="mt-3 grid gap-4 sm:grid-cols-2">
                         <div>
                           <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-900/75">What we see</div>
                           <ul className="mt-1.5 list-outside list-disc space-y-1.5 pl-4 text-xs leading-relaxed text-emerald-950/95">
-                            {(a.operatorFindings ?? []).map((line, i) => (
+                            {op.findings.map((line, i) => (
                               <li key={i}>{line}</li>
                             ))}
                           </ul>
@@ -185,7 +184,7 @@ export default function AssetLifecycle() {
                         <div>
                           <div className="text-[10px] font-semibold uppercase tracking-wide text-emerald-900/75">Suggested next steps</div>
                           <ol className="mt-1.5 list-outside list-decimal space-y-1.5 pl-4 text-xs font-medium leading-relaxed text-emerald-950">
-                            {(a.operatorActions ?? []).map((line, i) => (
+                            {op.actions.map((line, i) => (
                               <li key={i}>{line}</li>
                             ))}
                           </ol>
