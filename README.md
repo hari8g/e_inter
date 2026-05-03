@@ -1,5 +1,7 @@
 # e-inter
 
+**Repository:** [github.com/hari8g/e_inter](https://github.com/hari8g/e_inter)
+
 **e-inter** is an intermediate electric-fleet SaaS demo: everything you would expect from a lightweight **GPS telematics** command centre (in the spirit of **e-lite**), plus **CAN-aware** signals, **battery health** analytics with deterioration attribution, **asset lifecycle** planning (odometer, major-service dates, heuristics), **driver classification**, and **maintenance** hooks.
 
 The repo is split into **`frontend/`** (React + Vite + Tailwind + Recharts + Leaflet) and **`backend/`** (Express + TypeScript, in-memory demo fleet).
