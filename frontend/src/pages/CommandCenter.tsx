@@ -84,9 +84,12 @@ export default function CommandCenter() {
           </p>
           {(err.toLowerCase().includes("pattern") || err.toLowerCase().includes("invalid url")) && (
             <p className="mt-2 text-red-900">
-              If this is a production build, check <code className="rounded bg-white/80 px-1">VITE_API_ORIGIN</code> on
-              Vercel: use a full URL like <code className="rounded bg-white/80 px-1">https://your-api.vercel.app</code>{" "}
-              (include <code className="rounded bg-white/80 px-1">https://</code>), then rebuild the frontend.
+              If you opened the app from disk (<code className="rounded bg-white/80 px-1">file://</code>), use{" "}
+              <code className="rounded bg-white/80 px-1">npm run dev</code> in <code className="rounded bg-white/80 px-1">frontend/</code>{" "}
+              (or set <code className="rounded bg-white/80 px-1">VITE_API_ORIGIN</code> and rebuild). On Vercel, set{" "}
+              <code className="rounded bg-white/80 px-1">VITE_API_ORIGIN</code> to{" "}
+              <code className="rounded bg-white/80 px-1">https://your-api.vercel.app</code> (no quotes), then redeploy the
+              frontend.
             </p>
           )}
         </Card>
